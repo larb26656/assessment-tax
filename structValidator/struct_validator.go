@@ -1,4 +1,4 @@
-package main
+package structValidator
 
 import (
 	"net/http"
