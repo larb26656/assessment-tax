@@ -1,15 +1,15 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
+	"github.com/larb26656/assessment-tax/tax/calculator"
 )
 
 func main() {
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
-	})
+
+	// register
+	calculator.RegisterRouter(e)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
