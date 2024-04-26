@@ -1,7 +1,7 @@
 meta {
-  name: Calculate tax story 2
+  name: Calculate tax story 3
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
@@ -13,11 +13,11 @@ post {
 body:json {
   {
     "totalIncome": 500000.0,
-    "wht": 25000.0,
+    "wht": 0.0,
     "allowances": [
       {
         "allowanceType": "donation",
-        "amount": 0.0
+        "amount": 200000.0
       }
     ]
   }

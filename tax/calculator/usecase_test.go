@@ -7,6 +7,60 @@ import (
 )
 
 // CalculateAllowances
+func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
+	// Arrange
+	calculator := NewTaxCalculatorUseCase()
+	testCases := []struct {
+		name                    string
+		allowances              []AllowanceReq
+		expectedTotalAllowances float64
+	}{
+		{"Test case 1", []AllowanceReq{
+			{
+				AllowanceType: "donation",
+				Amount:        2000,
+			},
+		}, 2000},
+		{"Test case 2", []AllowanceReq{
+			{
+				AllowanceType: "donation",
+				Amount:        2000,
+			},
+			{
+				AllowanceType: "donation",
+				Amount:        4000,
+			},
+			{
+				AllowanceType: "donation",
+				Amount:        4000,
+			},
+		}, 10000},
+		{"Test case 3", []AllowanceReq{
+			{
+				AllowanceType: "donation",
+				Amount:        2000,
+			},
+			{
+				AllowanceType: "donation",
+				Amount:        4000,
+			},
+			{
+				AllowanceType: "donation",
+				Amount:        200000,
+			},
+		}, 100000},
+	}
+
+	// Act
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := calculator.CalculateAllowances(tc.allowances, 100000)
+
+			// Assert
+			assert.Equal(t, tc.expectedTotalAllowances, result)
+		})
+	}
+}
 
 // CalculateTaxDeduction
 func TestCalculateTaxDeduction_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
@@ -87,38 +141,10 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	}
 }
 
-type taxCalculatorUseCaseSpy struct {
-	taxCalculatorUseCase
-	calculateAllowancesCalled   bool
-	calculateTaxDeductionCalled bool
-	calculateNetIncomeCalled    bool
-	calculateTaxCalled          bool
-}
-
-func (t *taxCalculatorUseCaseSpy) CalculateAllowances(allowances []AllowanceReq) float64 {
-	t.calculateAllowancesCalled = true
-	return t.taxCalculatorUseCase.CalculateAllowances(allowances)
-}
-
-func (t *taxCalculatorUseCaseSpy) CalculateTaxDeduction(selfTaxDeduction, totalAllowances float64) float64 {
-	t.calculateTaxDeductionCalled = true
-	return t.taxCalculatorUseCase.CalculateTaxDeduction(selfTaxDeduction, totalAllowances)
-}
-
-func (t *taxCalculatorUseCaseSpy) CalculateNetIncome(totalIncome, taxDeduction float64) float64 {
-	t.calculateNetIncomeCalled = true
-	return t.taxCalculatorUseCase.CalculateNetIncome(totalIncome, taxDeduction)
-}
-
-func (t *taxCalculatorUseCaseSpy) CalculateTax(netIncome float64) float64 {
-	t.calculateTaxCalled = true
-	return t.taxCalculatorUseCase.CalculateTax(netIncome)
-}
-
 // TestCalculate
 func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := taxCalculatorUseCaseSpy{}
+	calculator := NewTaxCalculatorUseCase()
 
 	testCases := []struct {
 		name        string
@@ -139,6 +165,13 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				{AllowanceType: "donation", Amount: 0.0},
 			},
 		}, 4000},
+		{"Test case 3", TaxCalculatorReq{
+			TotalIncome: 500000.0,
+			WHT:         0.0,
+			Allowances: []AllowanceReq{
+				{AllowanceType: "donation", Amount: 200000.0},
+			},
+		}, 19000.0},
 	}
 
 	// Act
@@ -148,10 +181,6 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 
 			// Assert
 			assert.Equal(t, tc.expectedTax, result.Tax)
-			// assert.True(t, calculator.calculateAllowancesCalled)
-			// assert.True(t, calculator.calculateTaxDeductionCalled)
-			// assert.True(t, calculator.calculateNetIncomeCalled)
-			// assert.True(t, calculator.calculateTaxCalled)
 		})
 	}
 }
