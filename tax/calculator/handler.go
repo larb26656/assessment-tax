@@ -14,7 +14,7 @@ type taxCalculatorHttpHandler struct {
 	taxCalculatorUseCase TaxCalculatorUseCase
 }
 
-func NewTaxCalculatorHandler(taxCalculatorUseCase TaxCalculatorUseCase) TaxCalculatorHttpHandler {
+func NewTaxCalculatorHttpHandler(taxCalculatorUseCase TaxCalculatorUseCase) TaxCalculatorHttpHandler {
 	return &taxCalculatorHttpHandler{
 		taxCalculatorUseCase: taxCalculatorUseCase,
 	}
@@ -28,6 +28,10 @@ func (t taxCalculatorHttpHandler) CalculateTax(c echo.Context) error {
 
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Bad request")
+	}
+
+	if err = c.Validate(req); err != nil {
+		return err
 	}
 
 	res := t.taxCalculatorUseCase.Calculate(req)

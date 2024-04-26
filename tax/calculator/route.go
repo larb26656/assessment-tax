@@ -6,7 +6,7 @@ import (
 
 func RegisterRouter(e *echo.Echo) {
 	taxCalculatorUseCase := NewTaxCalculatorUseCase()
-	taxCalculatorHandler := NewTaxCalculatorHandler(taxCalculatorUseCase)
+	taxCalculatorHandler := NewTaxCalculatorHttpHandler(taxCalculatorUseCase)
 
 	e.POST("/tax/calculations", taxCalculatorHandler.CalculateTax)
 }

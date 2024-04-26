@@ -1,7 +1,5 @@
 package calculator
 
-import "fmt"
-
 type TaxCalculatorUseCase interface {
 	Calculate(req TaxCalculatorReq) TaxCalculatorRes
 	CalculateAllowances(req TaxCalculatorReq) float64
@@ -28,16 +26,12 @@ func (t taxCalculatorUseCase) Calculate(req TaxCalculatorReq) TaxCalculatorRes {
 
 	tax := t.CalculateTax(totalIncome)
 
-	fmt.Println(totalAllowances)
-	fmt.Println(totalIncome)
-	fmt.Println(tax)
-
 	return TaxCalculatorRes{
 		Tax: tax,
 	}
 }
 
-func (*taxCalculatorUseCase) CalculateAllowances(req TaxCalculatorReq) float64 {
+func (t taxCalculatorUseCase) CalculateAllowances(req TaxCalculatorReq) float64 {
 	var totalAllowances float64 = 0
 
 	for _, allowance := range req.Allowances {
@@ -47,7 +41,7 @@ func (*taxCalculatorUseCase) CalculateAllowances(req TaxCalculatorReq) float64 {
 	return totalAllowances
 }
 
-func (*taxCalculatorUseCase) CalculateNetIncome(income, wht, selfTaxDeduction, totalAllowances float64) float64 {
+func (t taxCalculatorUseCase) CalculateNetIncome(income, wht, selfTaxDeduction, totalAllowances float64) float64 {
 	taxDeduction := (wht + totalAllowances + selfTaxDeduction)
 	return income - taxDeduction
 }
