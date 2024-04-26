@@ -1,10 +1,11 @@
 package calculator
 
 type TaxCalculatorUseCase interface {
-	Calculate(req TaxCalculatorReq) TaxCalculatorRes
-	CalculateAllowances(req TaxCalculatorReq) float64
-	CalculateNetIncome(income, selfTaxDeduction, wht, totalAllowances float64) float64
+	CalculateAllowances(allowances []AllowanceReq) float64
+	CalculateTaxDeduction(selfTaxDeduction, totalAllowances float64) float64
+	CalculateNetIncome(income, taxDeduction float64) float64
 	CalculateTax(netIncome float64) float64
+	Calculate(req TaxCalculatorReq) TaxCalculatorRes
 }
 
 type taxCalculatorUseCase struct {
@@ -14,35 +15,21 @@ func NewTaxCalculatorUseCase() TaxCalculatorUseCase {
 	return &taxCalculatorUseCase{}
 }
 
-func (t taxCalculatorUseCase) Calculate(req TaxCalculatorReq) TaxCalculatorRes {
-	totalAllowances := t.CalculateAllowances(req)
-	selfTaxDeduction := 60000.0
-	totalIncome := t.CalculateNetIncome(
-		req.TotalIncome,
-		selfTaxDeduction,
-		req.WHT,
-		totalAllowances,
-	)
-
-	tax := t.CalculateTax(totalIncome)
-
-	return TaxCalculatorRes{
-		Tax: tax,
-	}
-}
-
-func (t taxCalculatorUseCase) CalculateAllowances(req TaxCalculatorReq) float64 {
+func (t taxCalculatorUseCase) CalculateAllowances(allowances []AllowanceReq) float64 {
 	var totalAllowances float64 = 0
 
-	for _, allowance := range req.Allowances {
+	for _, allowance := range allowances {
 		totalAllowances += allowance.Amount
 	}
 
 	return totalAllowances
 }
 
-func (t taxCalculatorUseCase) CalculateNetIncome(income, wht, selfTaxDeduction, totalAllowances float64) float64 {
-	taxDeduction := (wht + totalAllowances + selfTaxDeduction)
+func (t taxCalculatorUseCase) CalculateTaxDeduction(selfTaxDeduction, totalAllowances float64) float64 {
+	return totalAllowances + selfTaxDeduction
+}
+
+func (t taxCalculatorUseCase) CalculateNetIncome(income, taxDeduction float64) float64 {
 	return income - taxDeduction
 }
 
@@ -62,4 +49,24 @@ func (t taxCalculatorUseCase) CalculateTax(netIncome float64) float64 {
 	}
 
 	return tax
+}
+
+func (t taxCalculatorUseCase) Calculate(req TaxCalculatorReq) TaxCalculatorRes {
+	totalAllowances := t.CalculateAllowances(req.Allowances)
+	selfTaxDeduction := 60000.0
+	taxDeduction := t.CalculateTaxDeduction(
+		selfTaxDeduction,
+		totalAllowances,
+	)
+	netIncome := t.CalculateNetIncome(
+		req.TotalIncome,
+		taxDeduction,
+	)
+
+	tax := t.CalculateTax(netIncome)
+	netTax := tax - req.WHT
+
+	return TaxCalculatorRes{
+		Tax: netTax,
+	}
 }
