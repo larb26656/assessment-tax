@@ -119,6 +119,10 @@ func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, []
 	}
 
 	taxLevels[lastTaxVisitIndex].Tax -= wht
+
+	if taxLevels[lastTaxVisitIndex].Tax < 0 {
+		taxLevels[lastTaxVisitIndex].Tax = 0
+	}
 	tax := taxLevels[lastTaxVisitIndex].Tax
 
 	return tax, taxLevels

@@ -6,10 +6,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type mockPersonalDeductionsRepository struct {
+}
+
+func (p *mockPersonalDeductionsRepository) GetDeductions() (float64, error) {
+	return 60000.0, nil
+}
+
+func (p *mockPersonalDeductionsRepository) UpdateDeductions(deductions float64) error {
+	return nil
+}
+
 // CalculateAllowances
 func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionsRepository{},
+	)
 	testCases := []struct {
 		name                    string
 		allowances              []AllowanceReq
@@ -65,7 +78,9 @@ func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.
 // CalculateTaxDeduction
 func TestCalculateTaxDeduction_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionsRepository{},
+	)
 	testCases := []struct {
 		name                 string
 		selfTaxDeduction     float64
@@ -90,7 +105,9 @@ func TestCalculateTaxDeduction_ShouldCalculateCorrect_WhenCorrectInput(t *testin
 // CalculateNetIncome
 func TestCalculateNetIncome_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionsRepository{},
+	)
 	testCases := []struct {
 		name              string
 		income            float64
@@ -115,7 +132,9 @@ func TestCalculateNetIncome_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T
 // TestCalculateTax
 func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionsRepository{},
+	)
 	testCases := []struct {
 		name             string
 		netIncome        float64
@@ -263,7 +282,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			"Test case 6",
 			440000,
 			39000,
-			-10000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -271,7 +290,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   -10000,
+					Tax:   0,
 				},
 				{
 					Level: "500,001-1,000,000",
@@ -412,7 +431,9 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 // TestCalculate
 func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionsRepository{},
+	)
 
 	testCases := []struct {
 		name        string
