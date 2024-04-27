@@ -177,7 +177,7 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Act
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := calculator.Calculate(tc.req)
+			result, _ := calculator.Calculate(tc.req)
 
 			// Assert
 			assert.Equal(t, tc.expectedTax, result.Tax)

@@ -1,19 +1,20 @@
 package main
 
 import (
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
-	"github.com/larb26656/assessment-tax/structValidator"
-	"github.com/larb26656/assessment-tax/tax/calculator"
+	"fmt"
+
+	"github.com/larb26656/assessment-tax/config"
+	"github.com/larb26656/assessment-tax/server"
 )
 
 func main() {
-	e := echo.New()
+	// read configuration
+	appConfig, err := config.NewAppConfigFromEnv()
 
-	// register
-	calculator.RegisterRouter(e)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to load config %s", err))
+	}
 
-	e.Validator = structValidator.NewStructValidator(validator.New())
-
-	e.Logger.Fatal(e.Start(":8080"))
+	// start server
+	server.InitServer(appConfig)
 }

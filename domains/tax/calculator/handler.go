@@ -21,7 +21,6 @@ func NewTaxCalculatorHttpHandler(taxCalculatorUseCase TaxCalculatorUseCase) TaxC
 }
 
 func (t taxCalculatorHttpHandler) CalculateTax(c echo.Context) error {
-	// TODO validate req payload
 	var req TaxCalculatorReq
 
 	err := c.Bind(&req)
@@ -34,7 +33,11 @@ func (t taxCalculatorHttpHandler) CalculateTax(c echo.Context) error {
 		return err
 	}
 
-	res := t.taxCalculatorUseCase.Calculate(req)
+	res, err := t.taxCalculatorUseCase.Calculate(req)
+
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Something went wrong...")
+	}
 
 	return c.JSON(http.StatusOK, res)
 }
