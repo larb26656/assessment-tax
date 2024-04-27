@@ -11,6 +11,11 @@ type TaxCalculatorReq struct {
 	Allowances  []AllowanceReq `json:"allowances" validate:"required,dive"`
 }
 
+type TaxLevelRes struct {
+	Level string  `json:"leveL"`
+	Tax   float64 `json:"tax"`
+}
 type TaxCalculatorRes struct {
-	Tax float64 `json:"tax"`
+	Tax      float64       `json:"tax"`
+	TaxLevel []TaxLevelRes `json:"taxLevel"`
 }
