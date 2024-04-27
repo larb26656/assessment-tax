@@ -6,7 +6,7 @@ type TaxCalculatorUseCase interface {
 	CalculateAllowances(allowances []AllowanceReq, maxDonation float64) float64
 	CalculateTaxDeduction(personalDeduction, totalAllowances float64) float64
 	CalculateNetIncome(income, taxDeduction float64) float64
-	CalculateTax(netIncome float64) float64
+	CalculateTax(netIncome float64, wht float64) (float64, []TaxLevelRes)
 	Calculate(req TaxCalculatorReq) (TaxCalculatorRes, error)
 }
 
@@ -47,22 +47,81 @@ func (t *taxCalculatorUseCase) CalculateNetIncome(income, taxDeduction float64) 
 	return income - taxDeduction
 }
 
-func (t *taxCalculatorUseCase) CalculateTax(netIncome float64) float64 {
-	var tax float64 = 0
-
-	if netIncome <= 150000 {
-		tax = 0
-	} else if netIncome <= 500000 {
-		tax = (netIncome - 150000) * 0.1
-	} else if netIncome <= 1000000 {
-		tax = (netIncome-500000)*0.15 + 35000 // 35000 is the tax for the first bracket
-	} else if netIncome <= 2000000 {
-		tax = (netIncome-1000000)*0.2 + 100000 // 100000 is the tax for the second bracket
-	} else {
-		tax = (netIncome-2000000)*0.35 + 300000 // 300000 is the tax for the third bracket
+func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, []TaxLevelRes) {
+	taxLevels := []TaxLevelRes{
+		{
+			Level: "0-150,000",
+			Tax:   0,
+		},
+		{
+			Level: "150,001-500,000",
+			Tax:   0,
+		},
+		{
+			Level: "500,001-1,000,000",
+			Tax:   0,
+		},
+		{
+			Level: "1,000,001-2,000,000",
+			Tax:   0,
+		},
+		{
+			Level: "2,000,001 ขึ้นไป",
+			Tax:   0,
+		},
 	}
 
-	return tax
+	lastTaxVisitIndex := 0
+
+	if netIncome >= 0 {
+		taxLevels[0].Tax = 0
+	}
+
+	if netIncome > 150000 {
+		taxInLevel := (netIncome - 150000) * 0.1
+
+		if taxInLevel < 35000 {
+			taxLevels[1].Tax = taxInLevel
+		} else {
+			taxLevels[1].Tax = 35000
+		}
+
+		lastTaxVisitIndex++
+	}
+
+	if netIncome > 500000 {
+		taxInLevel := (netIncome-500000)*0.15 + 35000 // 35000 is the tax for the first bracket
+
+		if taxInLevel < 100000 {
+			taxLevels[2].Tax = taxInLevel
+		} else {
+			taxLevels[2].Tax = 100000
+		}
+
+		lastTaxVisitIndex++
+	}
+
+	if netIncome > 1000000 {
+		taxInLevel := (netIncome-1000000)*0.2 + 100000 // 100000 is the tax for the second bracket
+
+		if taxInLevel < 300000 {
+			taxLevels[3].Tax = taxInLevel
+		} else {
+			taxLevels[3].Tax = 300000
+		}
+
+		lastTaxVisitIndex++
+	}
+
+	if netIncome > 2000000 {
+		taxLevels[4].Tax = (netIncome-2000000)*0.35 + 300000 // 300000 is the tax for the third bracket
+		lastTaxVisitIndex++
+	}
+
+	taxLevels[lastTaxVisitIndex].Tax -= wht
+	tax := taxLevels[lastTaxVisitIndex].Tax
+
+	return tax, taxLevels
 }
 
 func (t *taxCalculatorUseCase) Calculate(req TaxCalculatorReq) (TaxCalculatorRes, error) {
@@ -82,10 +141,10 @@ func (t *taxCalculatorUseCase) Calculate(req TaxCalculatorReq) (TaxCalculatorRes
 		taxDeduction,
 	)
 
-	tax := t.CalculateTax(netIncome)
-	netTax := tax - req.WHT
+	tax, taxLevels := t.CalculateTax(netIncome, req.WHT)
 
 	return TaxCalculatorRes{
-		Tax: netTax,
+		Tax:      tax,
+		TaxLevel: taxLevels,
 	}, nil
 }
