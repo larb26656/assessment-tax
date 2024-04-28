@@ -136,15 +136,17 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 		&mockPersonalDeductionsRepository{},
 	)
 	testCases := []struct {
-		name             string
-		netIncome        float64
-		wht              float64
-		expectedTax      float64
-		expectedTaxLevel []TaxLevelRes
+		name              string
+		netIncome         float64
+		wht               float64
+		expectedTax       float64
+		expectedTaxRefund float64
+		expectedTaxLevel  []TaxLevelRes
 	}{
 		{
 			"Test case 1",
 			100000,
+			0,
 			0,
 			0,
 			[]TaxLevelRes{
@@ -174,6 +176,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			200000,
 			0,
 			5000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -201,6 +204,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			440000,
 			0,
 			29000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -228,6 +232,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			440000,
 			25000,
 			4000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -254,6 +259,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 		{"Test case 5",
 			440000,
 			29000,
+			0,
 			0,
 			[]TaxLevelRes{
 				{
@@ -283,6 +289,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			440000,
 			39000,
 			0,
+			10000,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -310,6 +317,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			600000,
 			0,
 			50000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -337,6 +345,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			750000,
 			0,
 			72500,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -364,6 +373,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			1500000,
 			0,
 			200000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -391,6 +401,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			3000000,
 			0,
 			650000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -419,10 +430,11 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Act
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			tax, taxLevel := calculator.CalculateTax(tc.netIncome, tc.wht)
+			tax, taxRefund, taxLevel := calculator.CalculateTax(tc.netIncome, tc.wht)
 
 			// Assert
 			assert.Equal(t, tc.expectedTax, tax)
+			assert.Equal(t, tc.expectedTaxRefund, taxRefund)
 			assert.Equal(t, tc.expectedTaxLevel, taxLevel)
 		})
 	}
@@ -436,9 +448,10 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	)
 
 	testCases := []struct {
-		name        string
-		req         TaxCalculatorReq
-		expectedTax float64
+		name              string
+		req               TaxCalculatorReq
+		expectedTax       float64
+		expectedTaxRefund float64
 	}{
 		{"Test case 1", TaxCalculatorReq{
 			TotalIncome: 500000.0,
@@ -446,21 +459,40 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			Allowances: []AllowanceReq{
 				{AllowanceType: "donation", Amount: 0.0},
 			},
-		}, 29000},
+		},
+			29000,
+			0,
+		},
 		{"Test case 2", TaxCalculatorReq{
 			TotalIncome: 500000.0,
 			WHT:         25000.0,
 			Allowances: []AllowanceReq{
 				{AllowanceType: "donation", Amount: 0.0},
 			},
-		}, 4000},
+		},
+			4000,
+			0,
+		},
 		{"Test case 3", TaxCalculatorReq{
 			TotalIncome: 500000.0,
 			WHT:         0.0,
 			Allowances: []AllowanceReq{
 				{AllowanceType: "donation", Amount: 200000.0},
 			},
-		}, 19000.0},
+		},
+			19000.0,
+			0,
+		},
+		{"Test case 3", TaxCalculatorReq{
+			TotalIncome: 500000.0,
+			WHT:         29000.0,
+			Allowances: []AllowanceReq{
+				{AllowanceType: "donation", Amount: 200000.0},
+			},
+		},
+			0,
+			10000.0,
+		},
 	}
 
 	// Act
@@ -470,6 +502,7 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 
 			// Assert
 			assert.Equal(t, tc.expectedTax, result.Tax)
+			assert.Equal(t, tc.expectedTaxRefund, result.TaxRefund)
 		})
 	}
 }

@@ -6,7 +6,7 @@ type TaxCalculatorUseCase interface {
 	CalculateAllowances(allowances []AllowanceReq, maxDonation float64) float64
 	CalculateTaxDeduction(personalDeduction, totalAllowances float64) float64
 	CalculateNetIncome(income, taxDeduction float64) float64
-	CalculateTax(netIncome float64, wht float64) (float64, []TaxLevelRes)
+	CalculateTax(netIncome float64, wht float64) (float64, float64, []TaxLevelRes)
 	Calculate(req TaxCalculatorReq) (TaxCalculatorRes, error)
 }
 
@@ -47,7 +47,7 @@ func (t *taxCalculatorUseCase) CalculateNetIncome(income, taxDeduction float64) 
 	return income - taxDeduction
 }
 
-func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, []TaxLevelRes) {
+func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, float64, []TaxLevelRes) {
 	taxLevels := []TaxLevelRes{
 		{
 			Level: "0-150,000",
@@ -120,12 +120,17 @@ func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, []
 
 	taxLevels[lastTaxVisitIndex].Tax -= wht
 
+	taxRefund := 0.0
+
 	if taxLevels[lastTaxVisitIndex].Tax < 0 {
+		taxRefund = taxLevels[lastTaxVisitIndex].Tax * -1
 		taxLevels[lastTaxVisitIndex].Tax = 0
+
 	}
+
 	tax := taxLevels[lastTaxVisitIndex].Tax
 
-	return tax, taxLevels
+	return tax, taxRefund, taxLevels
 }
 
 func (t *taxCalculatorUseCase) Calculate(req TaxCalculatorReq) (TaxCalculatorRes, error) {
@@ -145,10 +150,11 @@ func (t *taxCalculatorUseCase) Calculate(req TaxCalculatorReq) (TaxCalculatorRes
 		taxDeduction,
 	)
 
-	tax, taxLevels := t.CalculateTax(netIncome, req.WHT)
+	tax, taxRefund, taxLevels := t.CalculateTax(netIncome, req.WHT)
 
 	return TaxCalculatorRes{
-		Tax:      tax,
-		TaxLevel: taxLevels,
+		Tax:       tax,
+		TaxRefund: taxRefund,
+		TaxLevel:  taxLevels,
 	}, nil
 }
