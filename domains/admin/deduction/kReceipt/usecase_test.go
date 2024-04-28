@@ -1,10 +1,10 @@
-package personal
+package kReceipt
 
 import (
 	"errors"
 	"testing"
 
-	"github.com/larb26656/assessment-tax/constant/deductionType"
+	"github.com/larb26656/assessment-tax/constant/allowanceType"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,14 +24,14 @@ func (p *mockDeductionRepositoryCaseDeductionNotFound) UpdateDeduction(key strin
 func TestGetDeduction_ShouldReturnErr_WhenDeductionNotFound(t *testing.T) {
 	// Arrange
 	repo := &mockDeductionRepositoryCaseDeductionNotFound{}
-	usecase := NewPersonalDeductionUsecase(repo)
+	usecase := NewKReceiptDeductionUsecase(repo)
 
 	// Act
 	_, err := usecase.GetDeduction()
 
 	// Assert
 	assert.NotNil(t, err)
-	assert.Equal(t, deductionType.Personal, repo.key)
+	assert.Equal(t, allowanceType.KReceipt, repo.key)
 }
 
 type mockDeductionRepositoryCaseDeductionFound struct {
@@ -40,7 +40,7 @@ type mockDeductionRepositoryCaseDeductionFound struct {
 
 func (p *mockDeductionRepositoryCaseDeductionFound) GetDeduction(key string) (float64, error) {
 	p.key = key
-	return 60000.0, nil
+	return 50000.0, nil
 }
 
 func (p *mockDeductionRepositoryCaseDeductionFound) UpdateDeduction(key string, deductions float64) error {
@@ -50,15 +50,15 @@ func (p *mockDeductionRepositoryCaseDeductionFound) UpdateDeduction(key string, 
 func TestGetDeduction_ShouldReturnDeduction_WhenDeductionFound(t *testing.T) {
 	// Arrange
 	repo := &mockDeductionRepositoryCaseDeductionFound{}
-	usecase := NewPersonalDeductionUsecase(repo)
+	usecase := NewKReceiptDeductionUsecase(repo)
 
 	// Act
 	deduction, err := usecase.GetDeduction()
 
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, 60000.0, deduction)
-	assert.Equal(t, deductionType.Personal, repo.key)
+	assert.Equal(t, allowanceType.KReceipt, repo.key)
+	assert.Equal(t, 50000.0, deduction)
 }
 
 type mockDeductionRepositoryCaseUpdateDeductionError struct {
@@ -67,7 +67,7 @@ type mockDeductionRepositoryCaseUpdateDeductionError struct {
 }
 
 func (p *mockDeductionRepositoryCaseUpdateDeductionError) GetDeduction(key string) (float64, error) {
-	return 60000.0, nil
+	return 50000.0, nil
 }
 
 func (p *mockDeductionRepositoryCaseUpdateDeductionError) UpdateDeduction(key string, deduction float64) error {
@@ -80,9 +80,9 @@ func (p *mockDeductionRepositoryCaseUpdateDeductionError) UpdateDeduction(key st
 func TestUpdateDeduction_ShouldReturnError_WhenUpdateDeductionFail(t *testing.T) {
 	// Arrange
 	repo := &mockDeductionRepositoryCaseUpdateDeductionError{}
-	usecase := NewPersonalDeductionUsecase(repo)
-	req := UpdatePersonalDeductionReq{
-		Amount: 70000.0,
+	usecase := NewKReceiptDeductionUsecase(repo)
+	req := UpdateKReceiptDeductionReq{
+		Amount: 50000.0,
 	}
 
 	// Act
@@ -90,7 +90,7 @@ func TestUpdateDeduction_ShouldReturnError_WhenUpdateDeductionFail(t *testing.T)
 
 	// Assert
 	assert.NotNil(t, err)
-	assert.Equal(t, deductionType.Personal, repo.key)
+	assert.Equal(t, allowanceType.KReceipt, repo.key)
 	assert.Equal(t, req.Amount, repo.amount)
 }
 
@@ -112,8 +112,8 @@ func (p *mockDeductionRepositoryCaseUpdateSuccess) UpdateDeduction(key string, d
 func TestUpdateDeduction_ShouldSuccess_WhenCorrectInput(t *testing.T) {
 	// Arrange
 	repo := &mockDeductionRepositoryCaseUpdateSuccess{}
-	usecase := NewPersonalDeductionUsecase(repo)
-	req := UpdatePersonalDeductionReq{
+	usecase := NewKReceiptDeductionUsecase(repo)
+	req := UpdateKReceiptDeductionReq{
 		Amount: 70000.0,
 	}
 
@@ -122,7 +122,7 @@ func TestUpdateDeduction_ShouldSuccess_WhenCorrectInput(t *testing.T) {
 
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, deductionType.Personal, repo.key)
+	assert.Equal(t, allowanceType.KReceipt, repo.key)
 	assert.Equal(t, req.Amount, repo.amount)
-	assert.Equal(t, req.Amount, result.PersonalDeduction)
+	assert.Equal(t, req.Amount, result.KReceipt)
 }

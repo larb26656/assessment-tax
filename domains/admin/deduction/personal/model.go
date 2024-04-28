@@ -1,7 +1,7 @@
 package personal
 
 type UpdatePersonalDeductionReq struct {
-	Amount float64 `json:"amount" validate:"gte=0,lte=100000"`
+	Amount float64 `json:"amount" validate:"gte=10000,lte=100000"`
 }
 
 type UpdatePersonalDeductionRes struct {

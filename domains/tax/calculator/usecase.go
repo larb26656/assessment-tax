@@ -2,6 +2,7 @@ package calculator
 
 import (
 	"github.com/larb26656/assessment-tax/constant/allowanceType"
+	"github.com/larb26656/assessment-tax/domains/admin/deduction/kReceipt"
 	"github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
 )
 
@@ -16,11 +17,13 @@ type TaxCalculatorUseCase interface {
 
 type taxCalculatorUseCase struct {
 	personalDeductionUsecase personal.PersonalDeductionUsecase
+	kReceiptDeductionUsecase kReceipt.KReceiptDeductionUsecase
 }
 
-func NewTaxCalculatorUseCase(personalDeductionUsecase personal.PersonalDeductionUsecase) TaxCalculatorUseCase {
+func NewTaxCalculatorUseCase(personalDeductionUsecase personal.PersonalDeductionUsecase, kReceiptDeductionUsecase kReceipt.KReceiptDeductionUsecase) TaxCalculatorUseCase {
 	return &taxCalculatorUseCase{
 		personalDeductionUsecase: personalDeductionUsecase,
+		kReceiptDeductionUsecase: kReceiptDeductionUsecase,
 	}
 }
 
@@ -55,7 +58,13 @@ func (t *taxCalculatorUseCase) CalculateTaxDeduction(personalDeduction, totalAll
 }
 
 func (t *taxCalculatorUseCase) CalculateNetIncome(income, taxDeduction float64) float64 {
-	return income - taxDeduction
+	netIncome := income - taxDeduction
+
+	if netIncome < 0 {
+		netIncome = 0
+	}
+
+	return netIncome
 }
 
 func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, float64, []TaxLevelRes) {
@@ -145,15 +154,22 @@ func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, fl
 }
 
 func (t *taxCalculatorUseCase) Calculate(req TaxCalculatorReq) (TaxCalculatorRes, error) {
-	totalAllowances := t.CalculateAllowances(req.Allowances, 100000, 50000)
-	selfTaxDeduction, err := t.personalDeductionUsecase.GetDeduction()
+	personalTaxDeduction, err := t.personalDeductionUsecase.GetDeduction()
 
 	if err != nil {
 		return TaxCalculatorRes{}, err
 	}
 
+	kReceiptMaxTaxDeduction, err := t.kReceiptDeductionUsecase.GetDeduction()
+
+	if err != nil {
+		return TaxCalculatorRes{}, err
+	}
+
+	totalAllowances := t.CalculateAllowances(req.Allowances, 100000, kReceiptMaxTaxDeduction)
+
 	taxDeduction := t.CalculateTaxDeduction(
-		selfTaxDeduction,
+		personalTaxDeduction,
 		totalAllowances,
 	)
 	netIncome := t.CalculateNetIncome(

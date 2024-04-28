@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/larb26656/assessment-tax/constant/allowanceType"
+	"github.com/larb26656/assessment-tax/domains/admin/deduction/kReceipt"
 	"github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,11 +21,23 @@ func (p *mockPersonalDeductionUsecase) UpdateDeduction(req personal.UpdatePerson
 	return personal.UpdatePersonalDeductionRes{}, nil
 }
 
+type mockKReceiptDeductionUsecase struct {
+}
+
+func (p *mockKReceiptDeductionUsecase) GetDeduction() (float64, error) {
+	return 50000.0, nil
+}
+
+func (p *mockKReceiptDeductionUsecase) UpdateDeduction(req kReceipt.UpdateKReceiptDeductionReq) (kReceipt.UpdateKReceiptDeductionRes, error) {
+	return kReceipt.UpdateKReceiptDeductionRes{}, nil
+}
+
 // CalculateAllowances
 func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
 		&mockPersonalDeductionUsecase{},
+		&mockKReceiptDeductionUsecase{},
 	)
 	testCases := []struct {
 		name                    string
@@ -115,6 +128,7 @@ func TestCalculateTaxDeduction_ShouldCalculateCorrect_WhenCorrectInput(t *testin
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
 		&mockPersonalDeductionUsecase{},
+		&mockKReceiptDeductionUsecase{},
 	)
 	testCases := []struct {
 		name                 string
@@ -142,6 +156,7 @@ func TestCalculateNetIncome_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
 		&mockPersonalDeductionUsecase{},
+		&mockKReceiptDeductionUsecase{},
 	)
 	testCases := []struct {
 		name              string
@@ -150,7 +165,7 @@ func TestCalculateNetIncome_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T
 		expectedNetIncome float64
 	}{
 		{"Test case 1", 200000, 150000, 50000},
-		{"Test case 2", 200000, 300000, -100000}, // Expected tax is 5% of (200000 - 150000) Expected tax is 35% of (3000000 - 2000000) + 300000
+		{"Test case 2", 200000, 300000, 0},
 	}
 
 	// Act
@@ -169,6 +184,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
 		&mockPersonalDeductionUsecase{},
+		&mockKReceiptDeductionUsecase{},
 	)
 	testCases := []struct {
 		name              string
@@ -488,10 +504,11 @@ func (p *mockPersonalDeductionUsecaseGetDeductionNotFound) UpdateDeduction(req p
 	return personal.UpdatePersonalDeductionRes{}, nil
 }
 
-func TestCalculate_ShouldReturnErr_WhenGetDeductionNotFound(t *testing.T) {
+func TestCalculate_ShouldReturnErr_WhenGetPersonalDeductionNotFound(t *testing.T) {
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
 		&mockPersonalDeductionUsecaseGetDeductionNotFound{},
+		&mockKReceiptDeductionUsecase{},
 	)
 
 	req := TaxCalculatorReq{
@@ -509,12 +526,48 @@ func TestCalculate_ShouldReturnErr_WhenGetDeductionNotFound(t *testing.T) {
 	assert.Equal(t, 0.0, result.Tax)
 	assert.Equal(t, 0.0, result.TaxRefund)
 	assert.NotNil(t, err)
-
 }
+
+type mockKReceiptDeductionUsecaseGetDeductionNotFound struct {
+}
+
+func (p *mockKReceiptDeductionUsecaseGetDeductionNotFound) GetDeduction() (float64, error) {
+	return 0.0, errors.New("Not found")
+}
+
+func (p *mockKReceiptDeductionUsecaseGetDeductionNotFound) UpdateDeduction(req kReceipt.UpdateKReceiptDeductionReq) (kReceipt.UpdateKReceiptDeductionRes, error) {
+	return kReceipt.UpdateKReceiptDeductionRes{}, nil
+}
+
+func TestCalculate_ShouldReturnErr_WhenGetKReceiptDeductionNotFound(t *testing.T) {
+	// Arrange
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecase{},
+		&mockKReceiptDeductionUsecaseGetDeductionNotFound{},
+	)
+
+	req := TaxCalculatorReq{
+		TotalIncome: 500000.0,
+		WHT:         0.0,
+		Allowances: []AllowanceReq{
+			{AllowanceType: allowanceType.Donation, Amount: 0.0},
+		},
+	}
+
+	// Act
+	result, err := calculator.Calculate(req)
+
+	// Assert
+	assert.Equal(t, 0.0, result.Tax)
+	assert.Equal(t, 0.0, result.TaxRefund)
+	assert.NotNil(t, err)
+}
+
 func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
 		&mockPersonalDeductionUsecase{},
+		&mockKReceiptDeductionUsecase{},
 	)
 
 	testCases := []struct {
@@ -705,6 +758,7 @@ func TestCalculateTaxWithCSV_ShouldReturnErr_WhenGetDeductionNotFound(t *testing
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
 		&mockPersonalDeductionUsecaseGetDeductionNotFound{},
+		&mockKReceiptDeductionUsecase{},
 	)
 
 	reqs := []TaxCalculatorReq{
@@ -729,6 +783,7 @@ func TestCalculateMultiRequest_ShouldCalculateCorrect_WhenCorrectInput(t *testin
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
 		&mockPersonalDeductionUsecase{},
+		&mockKReceiptDeductionUsecase{},
 	)
 
 	testCases := []struct {
