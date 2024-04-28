@@ -1,7 +1,7 @@
 package calculator
 
 type AllowanceReq struct {
-	AllowanceType string  `json:"allowanceType" validate:"required"`
+	AllowanceType string  `json:"allowanceType" validate:"required,oneof='donation' 'k-receipt'"`
 	Amount        float64 `json:"amount" validate:"gte=0"`
 }
 

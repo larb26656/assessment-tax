@@ -34,9 +34,9 @@ func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.
 		{"Test case 1", []AllowanceReq{
 			{
 				AllowanceType: allowanceType.Donation,
-				Amount:        2000,
+				Amount:        2000.0,
 			},
-		}, 2000},
+		}, 2000.0},
 		{"Test case 2", []AllowanceReq{
 			{
 				AllowanceType: allowanceType.Donation,
@@ -54,23 +54,55 @@ func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.
 		{"Test case 3", []AllowanceReq{
 			{
 				AllowanceType: allowanceType.Donation,
-				Amount:        2000,
+				Amount:        2000.0,
 			},
 			{
 				AllowanceType: allowanceType.Donation,
-				Amount:        4000,
+				Amount:        4000.0,
 			},
 			{
 				AllowanceType: allowanceType.Donation,
-				Amount:        200000,
+				Amount:        200000.0,
 			},
-		}, 100000},
+		}, 100000.0},
+		{"Test case 4", []AllowanceReq{
+			{
+				AllowanceType: allowanceType.Donation,
+				Amount:        2000.0,
+			},
+			{
+				AllowanceType: allowanceType.KReceipt,
+				Amount:        4000.0,
+			},
+		}, 6000.0},
+		{"Test case 5", []AllowanceReq{
+			{
+				AllowanceType: allowanceType.Donation,
+				Amount:        200000.0,
+			},
+			{
+				AllowanceType: allowanceType.KReceipt,
+				Amount:        200000.0,
+			},
+		}, 150000.0},
+		{"Test case 6", []AllowanceReq{
+			{
+				AllowanceType: allowanceType.KReceipt,
+				Amount:        5000.0,
+			},
+		}, 5000.0},
+		{"Test case 7", []AllowanceReq{
+			{
+				AllowanceType: allowanceType.KReceipt,
+				Amount:        200000.0,
+			},
+		}, 50000.0},
 	}
 
 	// Act
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := calculator.CalculateAllowances(tc.allowances, 100000)
+			result := calculator.CalculateAllowances(tc.allowances, 100000.0, 50000.0)
 
 			// Assert
 			assert.Equal(t, tc.expectedTotalAllowances, result)
@@ -90,8 +122,8 @@ func TestCalculateTaxDeduction_ShouldCalculateCorrect_WhenCorrectInput(t *testin
 		totalAllowances      float64
 		expectedTaxDeduction float64
 	}{
-		{"Test case 1", 60000, 20, 60020},
-		{"Test case 2", 70000, 30000, 100000}, // Expected tax is 5% of (200000 - 150000) Expected tax is 35% of (3000000 - 2000000) + 300000
+		{"Test case 1", 60000.0, 20.0, 60020.0},
+		{"Test case 2", 70000.0, 30000.0, 100000.0}, // Expected tax is 5% of (200000 - 150000) Expected tax is 35% of (3000000 - 2000000) + 300000
 	}
 
 	// Act
@@ -148,142 +180,142 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	}{
 		{
 			"Test case 1",
-			100000,
-			0,
-			0,
-			0,
+			100000.0,
+			0.0,
+			0.0,
+			0.0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		},
 		{"Test case 2",
-			200000,
-			0,
-			5000,
-			0,
+			200000.0,
+			0.0,
+			5000.0,
+			0.0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   5000,
+					Tax:   5000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		}, // Expected tax is 5% of (200000 - 150000)
 		{"Test case 3",
-			440000,
-			0,
-			29000,
-			0,
+			440000.0,
+			0.0,
+			29000.0,
+			0.0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   29000,
+					Tax:   29000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		}, // Expected tax is 15% of (440000 - 500000) + 35000
 		{"Test case 4",
-			440000,
-			25000,
-			4000,
-			0,
+			440000.0,
+			25000.0,
+			4000.0,
+			0.0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   29000,
+					Tax:   29000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		},
 		{"Test case 5",
-			440000,
-			29000,
-			0,
-			0,
+			440000.0,
+			29000.0,
+			0.0,
+			0.0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   29000,
+					Tax:   29000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		},
@@ -296,135 +328,135 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   29000,
+					Tax:   29000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		},
 		{"Test case 7",
-			600000,
+			600000.0,
 			0,
-			50000,
+			50000.0,
 			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   35000,
+					Tax:   35000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   50000,
+					Tax:   50000.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		}, // Expected tax is 15% of (600000 - 500000) + 35000
 		{"Test case 8",
-			750000,
-			0,
-			72500,
-			0,
+			750000.0,
+			0.0,
+			72500.0,
+			0.0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   35000,
+					Tax:   35000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   72500,
+					Tax:   72500.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		}, // Expected tax is 15% of (750000 - 500000) + 35000
 		{"Test case 9",
-			1500000,
-			0,
-			200000,
-			0,
+			1500000.0,
+			0.0,
+			200000.0,
+			0.0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   35000,
+					Tax:   35000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   100000,
+					Tax:   100000.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   200000,
+					Tax:   200000.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   0,
+					Tax:   0.0,
 				},
 			},
 		}, // Expected tax is 20% of (1500000 - 1000000) + 100000
 		{"Test case 10",
-			3000000,
-			0,
-			650000,
-			0,
+			3000000.0,
+			0.0,
+			650000.0,
+			0.0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
-					Tax:   0,
+					Tax:   0.0,
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   35000,
+					Tax:   35000.0,
 				},
 				{
 					Level: "500,001-1,000,000",
-					Tax:   100000,
+					Tax:   100000.0,
 				},
 				{
 					Level: "1,000,001-2,000,000",
-					Tax:   300000,
+					Tax:   300000.0,
 				},
 				{
 					Level: "2,000,001 ขึ้นไป",
-					Tax:   650000,
+					Tax:   650000.0,
 				},
 			},
 		}, // Expected tax is 35% of (3000000 - 2000000) + 300000
@@ -490,6 +522,7 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 		req               TaxCalculatorReq
 		expectedTax       float64
 		expectedTaxRefund float64
+		expectedTaxLevel  []TaxLevelRes
 	}{
 		{"Test case 1", TaxCalculatorReq{
 			TotalIncome: 500000.0,
@@ -498,8 +531,30 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				{AllowanceType: allowanceType.Donation, Amount: 0.0},
 			},
 		},
-			29000,
-			0,
+			29000.0,
+			0.0,
+			[]TaxLevelRes{
+				{
+					Level: "0-150,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "150,001-500,000",
+					Tax:   29000.0,
+				},
+				{
+					Level: "500,001-1,000,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "1,000,001-2,000,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "2,000,001 ขึ้นไป",
+					Tax:   0.0,
+				},
+			},
 		},
 		{"Test case 2", TaxCalculatorReq{
 			TotalIncome: 500000.0,
@@ -508,8 +563,30 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				{AllowanceType: allowanceType.Donation, Amount: 0.0},
 			},
 		},
-			4000,
-			0,
+			4000.0,
+			0.0,
+			[]TaxLevelRes{
+				{
+					Level: "0-150,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "150,001-500,000",
+					Tax:   29000.0,
+				},
+				{
+					Level: "500,001-1,000,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "1,000,001-2,000,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "2,000,001 ขึ้นไป",
+					Tax:   0.0,
+				},
+			},
 		},
 		{"Test case 3", TaxCalculatorReq{
 			TotalIncome: 500000.0,
@@ -519,7 +596,29 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			},
 		},
 			19000.0,
-			0,
+			0.0,
+			[]TaxLevelRes{
+				{
+					Level: "0-150,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "150,001-500,000",
+					Tax:   19000.0,
+				},
+				{
+					Level: "500,001-1,000,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "1,000,001-2,000,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "2,000,001 ขึ้นไป",
+					Tax:   0.0,
+				},
+			},
 		},
 		{"Test case 4", TaxCalculatorReq{
 			TotalIncome: 500000.0,
@@ -528,8 +627,63 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				{AllowanceType: allowanceType.Donation, Amount: 200000.0},
 			},
 		},
-			0,
+			0.0,
 			10000.0,
+			[]TaxLevelRes{
+				{
+					Level: "0-150,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "150,001-500,000",
+					Tax:   19000.0,
+				},
+				{
+					Level: "500,001-1,000,000",
+					Tax:   100000.0,
+				},
+				{
+					Level: "1,000,001-2,000,000",
+					Tax:   200000.0,
+				},
+				{
+					Level: "2,000,001 ขึ้นไป",
+					Tax:   0.0,
+				},
+			},
+		},
+		{"Test case 5", TaxCalculatorReq{
+			TotalIncome: 500000.0,
+			WHT:         0.0,
+			Allowances: []AllowanceReq{
+				{AllowanceType: allowanceType.KReceipt, Amount: 200000.0},
+				{AllowanceType: allowanceType.Donation, Amount: 100000.0},
+			},
+		},
+			14000.0,
+			0.0,
+			[]TaxLevelRes{
+				{
+					Level: "0-150,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "150,001-500,000",
+					Tax:   14000.0,
+				},
+				{
+					Level: "500,001-1,000,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "1,000,001-2,000,000",
+					Tax:   0.0,
+				},
+				{
+					Level: "2,000,001 ขึ้นไป",
+					Tax:   0.0,
+				},
+			},
 		},
 	}
 
@@ -611,7 +765,7 @@ func TestCalculateMultiRequest_ShouldCalculateCorrect_WhenCorrectInput(t *testin
 					{
 						TotalIncome: 500000.0,
 						Tax:         29000.0,
-						TaxRefund:   0,
+						TaxRefund:   0.0,
 					},
 					{
 						TotalIncome: 600000.0,
