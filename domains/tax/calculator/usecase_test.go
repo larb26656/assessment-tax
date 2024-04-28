@@ -1,6 +1,7 @@
 package calculator
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
@@ -442,6 +443,41 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 }
 
 // TestCalculate
+
+type mockPersonalDeductionUsecaseGetDeductionNotFound struct {
+}
+
+func (p *mockPersonalDeductionUsecaseGetDeductionNotFound) GetDeduction() (float64, error) {
+	return 0.0, errors.New("Not found")
+}
+
+func (p *mockPersonalDeductionUsecaseGetDeductionNotFound) UpdateDeduction(req personal.UpdatePersonalDeductionReq) (personal.UpdatePersonalDeductionRes, error) {
+	return personal.UpdatePersonalDeductionRes{}, nil
+}
+
+func TestCalculate_ShouldReturnErr_WhenGetDeductionNotFound(t *testing.T) {
+	// Arrange
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecaseGetDeductionNotFound{},
+	)
+
+	req := TaxCalculatorReq{
+		TotalIncome: 500000.0,
+		WHT:         0.0,
+		Allowances: []AllowanceReq{
+			{AllowanceType: "donation", Amount: 0.0},
+		},
+	}
+
+	// Act
+	result, err := calculator.Calculate(req)
+
+	// Assert
+	assert.Equal(t, 0.0, result.Tax)
+	assert.Equal(t, 0.0, result.TaxRefund)
+	assert.NotNil(t, err)
+
+}
 func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
 	calculator := NewTaxCalculatorUseCase(
@@ -484,7 +520,7 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			19000.0,
 			0,
 		},
-		{"Test case 3", TaxCalculatorReq{
+		{"Test case 4", TaxCalculatorReq{
 			TotalIncome: 500000.0,
 			WHT:         29000.0,
 			Allowances: []AllowanceReq{
