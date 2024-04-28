@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/larb26656/assessment-tax/constant/allowanceType"
 	"github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
 	"github.com/stretchr/testify/assert"
 )
@@ -32,35 +33,35 @@ func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.
 	}{
 		{"Test case 1", []AllowanceReq{
 			{
-				AllowanceType: "donation",
+				AllowanceType: allowanceType.Donation,
 				Amount:        2000,
 			},
 		}, 2000},
 		{"Test case 2", []AllowanceReq{
 			{
-				AllowanceType: "donation",
+				AllowanceType: allowanceType.Donation,
 				Amount:        2000,
 			},
 			{
-				AllowanceType: "donation",
+				AllowanceType: allowanceType.Donation,
 				Amount:        4000,
 			},
 			{
-				AllowanceType: "donation",
+				AllowanceType: allowanceType.Donation,
 				Amount:        4000,
 			},
 		}, 10000},
 		{"Test case 3", []AllowanceReq{
 			{
-				AllowanceType: "donation",
+				AllowanceType: allowanceType.Donation,
 				Amount:        2000,
 			},
 			{
-				AllowanceType: "donation",
+				AllowanceType: allowanceType.Donation,
 				Amount:        4000,
 			},
 			{
-				AllowanceType: "donation",
+				AllowanceType: allowanceType.Donation,
 				Amount:        200000,
 			},
 		}, 100000},
@@ -465,7 +466,7 @@ func TestCalculate_ShouldReturnErr_WhenGetDeductionNotFound(t *testing.T) {
 		TotalIncome: 500000.0,
 		WHT:         0.0,
 		Allowances: []AllowanceReq{
-			{AllowanceType: "donation", Amount: 0.0},
+			{AllowanceType: allowanceType.Donation, Amount: 0.0},
 		},
 	}
 
@@ -494,7 +495,7 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			TotalIncome: 500000.0,
 			WHT:         0.0,
 			Allowances: []AllowanceReq{
-				{AllowanceType: "donation", Amount: 0.0},
+				{AllowanceType: allowanceType.Donation, Amount: 0.0},
 			},
 		},
 			29000,
@@ -504,7 +505,7 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			TotalIncome: 500000.0,
 			WHT:         25000.0,
 			Allowances: []AllowanceReq{
-				{AllowanceType: "donation", Amount: 0.0},
+				{AllowanceType: allowanceType.Donation, Amount: 0.0},
 			},
 		},
 			4000,
@@ -514,7 +515,7 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			TotalIncome: 500000.0,
 			WHT:         0.0,
 			Allowances: []AllowanceReq{
-				{AllowanceType: "donation", Amount: 200000.0},
+				{AllowanceType: allowanceType.Donation, Amount: 200000.0},
 			},
 		},
 			19000.0,
@@ -524,7 +525,7 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			TotalIncome: 500000.0,
 			WHT:         29000.0,
 			Allowances: []AllowanceReq{
-				{AllowanceType: "donation", Amount: 200000.0},
+				{AllowanceType: allowanceType.Donation, Amount: 200000.0},
 			},
 		},
 			0,
@@ -540,6 +541,100 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			// Assert
 			assert.Equal(t, tc.expectedTax, result.Tax)
 			assert.Equal(t, tc.expectedTaxRefund, result.TaxRefund)
+		})
+	}
+}
+
+// CalculateMultiRequest
+
+func TestCalculateTaxWithCSV_ShouldReturnErr_WhenGetDeductionNotFound(t *testing.T) {
+	// Arrange
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecaseGetDeductionNotFound{},
+	)
+
+	reqs := []TaxCalculatorReq{
+		{
+			TotalIncome: 500000.0,
+			WHT:         0.0,
+			Allowances: []AllowanceReq{
+				{AllowanceType: allowanceType.Donation, Amount: 0.0},
+			},
+		},
+	}
+
+	// Act
+	_, err := calculator.CalculateMultiRequest(reqs)
+
+	// Assert
+	assert.NotNil(t, err)
+
+}
+
+func TestCalculateMultiRequest_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
+	// Arrange
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecase{},
+	)
+
+	testCases := []struct {
+		name        string
+		reqs        []TaxCalculatorReq
+		expectedRes TaxCalucalorMultipleRes
+	}{
+		{"Test case 1",
+			[]TaxCalculatorReq{
+				{
+					TotalIncome: 500000.0,
+					WHT:         0.0,
+					Allowances: []AllowanceReq{
+						{AllowanceType: allowanceType.Donation, Amount: 0.0},
+					},
+				},
+				{
+					TotalIncome: 600000.0,
+					WHT:         40000.0,
+					Allowances: []AllowanceReq{
+						{AllowanceType: allowanceType.Donation, Amount: 20000.0},
+					},
+				},
+				{
+					TotalIncome: 750000.0,
+					WHT:         50000.0,
+					Allowances: []AllowanceReq{
+						{AllowanceType: allowanceType.Donation, Amount: 15000.0},
+					},
+				},
+			},
+			TaxCalucalorMultipleRes{
+				Taxes: []TaxCalucalorMultipleDetailRes{
+					{
+						TotalIncome: 500000.0,
+						Tax:         29000.0,
+						TaxRefund:   0,
+					},
+					{
+						TotalIncome: 600000.0,
+						Tax:         0.0,
+						TaxRefund:   2000.0,
+					},
+					{
+						TotalIncome: 750000.0,
+						Tax:         11250.0,
+						TaxRefund:   0.0,
+					},
+				},
+			},
+		},
+	}
+
+	// Act
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, _ := calculator.CalculateMultiRequest(tc.reqs)
+
+			// Assert
+			assert.Equal(t, tc.expectedRes, result)
 		})
 	}
 }

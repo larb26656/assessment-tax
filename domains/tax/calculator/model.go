@@ -20,3 +20,13 @@ type TaxCalculatorRes struct {
 	TaxRefund float64       `json:"taxRefund"`
 	TaxLevel  []TaxLevelRes `json:"taxLevel"`
 }
+
+type TaxCalucalorMultipleDetailRes struct {
+	TotalIncome float64 `json:"totalIncome"`
+	Tax         float64 `json:"tax"`
+	TaxRefund   float64 `json:"taxRefund"`
+}
+
+type TaxCalucalorMultipleRes struct {
+	Taxes []TaxCalucalorMultipleDetailRes `json:"taxes"`
+}
