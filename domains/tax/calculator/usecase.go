@@ -8,6 +8,7 @@ type TaxCalculatorUseCase interface {
 	CalculateNetIncome(income, taxDeduction float64) float64
 	CalculateTax(netIncome float64, wht float64) (float64, float64, []TaxLevelRes)
 	Calculate(req TaxCalculatorReq) (TaxCalculatorRes, error)
+	CalculateMultiRequest(reqs []TaxCalculatorReq) (TaxCalucalorMultipleRes, error)
 }
 
 type taxCalculatorUseCase struct {
@@ -156,5 +157,26 @@ func (t *taxCalculatorUseCase) Calculate(req TaxCalculatorReq) (TaxCalculatorRes
 		Tax:       tax,
 		TaxRefund: taxRefund,
 		TaxLevel:  taxLevels,
+	}, nil
+}
+
+func (t *taxCalculatorUseCase) CalculateMultiRequest(reqs []TaxCalculatorReq) (TaxCalucalorMultipleRes, error) {
+	var taxes []TaxCalucalorMultipleDetailRes
+	for _, req := range reqs {
+		taxResult, err := t.Calculate(req)
+
+		if err != nil {
+			return TaxCalucalorMultipleRes{}, err
+		}
+
+		taxes = append(taxes, TaxCalucalorMultipleDetailRes{
+			TotalIncome: req.TotalIncome,
+			Tax:         taxResult.Tax,
+			TaxRefund:   taxResult.TaxRefund,
+		})
+	}
+
+	return TaxCalucalorMultipleRes{
+		Taxes: taxes,
 	}, nil
 }

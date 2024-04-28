@@ -23,6 +23,7 @@ func RegisterRoute(appConfig *config.AppConfig, db *sql.DB, e *echo.Echo) {
 	taxCalculatorHttpHandler := calculator.NewTaxCalculatorHttpHandler(taxCalculatorUsecase)
 
 	e.POST("/tax/calculations", taxCalculatorHttpHandler.CalculateTax)
+	e.POST("/tax/calculations/upload-csv", taxCalculatorHttpHandler.CalculateTaxWithCSV)
 
 	// admin
 	adminRepository := admin.NewAdminRepository(appConfig)
