@@ -1,4 +1,4 @@
-package personal
+package kReceipt
 
 import (
 	"errors"
@@ -13,16 +13,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockPersonalDeductionUsecaseCaseSuccess struct {
+type mockKReceiptDeductionUsecaseCaseSuccess struct {
 }
 
-func (m *mockPersonalDeductionUsecaseCaseSuccess) GetDeduction() (float64, error) {
-	return 60000.0, nil
+func (m *mockKReceiptDeductionUsecaseCaseSuccess) GetDeduction() (float64, error) {
+	return 50000.0, nil
 }
 
-func (m *mockPersonalDeductionUsecaseCaseSuccess) UpdateDeduction(req UpdatePersonalDeductionReq) (UpdatePersonalDeductionRes, error) {
-	return UpdatePersonalDeductionRes{
-		PersonalDeduction: 60000.0,
+func (m *mockKReceiptDeductionUsecaseCaseSuccess) UpdateDeduction(req UpdateKReceiptDeductionReq) (UpdateKReceiptDeductionRes, error) {
+	return UpdateKReceiptDeductionRes{
+		KReceipt: 50000.0,
 	}, nil
 }
 
@@ -31,7 +31,7 @@ func mockUpdateDeductionHttpReq(reqBody string) (*echo.Echo, echo.Context, *http
 
 	e.Validator = myValidator.NewStructValidator(validator.New())
 
-	req := httptest.NewRequest(http.MethodPost, "/admin/deductions/personal", strings.NewReader(reqBody))
+	req := httptest.NewRequest(http.MethodPost, "/admin/deductions/k-receipt", strings.NewReader(reqBody))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -41,8 +41,8 @@ func mockUpdateDeductionHttpReq(reqBody string) (*echo.Echo, echo.Context, *http
 
 func TestUpdateDeductionHandler_ShouldGetBadRequest_WhenWrongInput(t *testing.T) {
 	// Arrange
-	usecase := &mockPersonalDeductionUsecaseCaseSuccess{}
-	handler := NewPersonalDeductionHttpHandler(
+	usecase := &mockKReceiptDeductionUsecaseCaseSuccess{}
+	handler := NewKReceiptDeductionHttpHandler(
 		usecase,
 	)
 
@@ -52,34 +52,20 @@ func TestUpdateDeductionHandler_ShouldGetBadRequest_WhenWrongInput(t *testing.T)
 	}{
 		{
 			"Test case 1",
-			``,
-		},
-		{
-			"Test case 2",
-			`{}`,
-		},
-		{
-			"Test case 3",
 			`{
 				"amount": asdasd
 			}`,
 		},
 		{
-			"Test case 4",
-			`{
-				"amount": 99.0
-			}`,
-		},
-		{
-			"Test case 5",
-			`{
-				"amount": 100001.0
-			}`,
-		},
-		{
-			"Test case 5",
+			"Test case 2",
 			`{
 				"amount": -1
+			}`,
+		},
+		{
+			"Test case 3",
+			`{
+				"amount": 100001.0
 			}`,
 		},
 	}
@@ -99,26 +85,26 @@ func TestUpdateDeductionHandler_ShouldGetBadRequest_WhenWrongInput(t *testing.T)
 	}
 }
 
-type mockPersonalDeductionUsecaseCaseErrorOnUpdateDeduction struct {
+type mockKReceiptDeductionUsecaseCaseErrorOnUpdateDeduction struct {
 }
 
-func (m *mockPersonalDeductionUsecaseCaseErrorOnUpdateDeduction) GetDeduction() (float64, error) {
-	return 60000.0, nil
+func (m *mockKReceiptDeductionUsecaseCaseErrorOnUpdateDeduction) GetDeduction() (float64, error) {
+	return 50000.0, nil
 }
 
-func (m *mockPersonalDeductionUsecaseCaseErrorOnUpdateDeduction) UpdateDeduction(req UpdatePersonalDeductionReq) (UpdatePersonalDeductionRes, error) {
-	return UpdatePersonalDeductionRes{}, errors.New("error on update")
+func (m *mockKReceiptDeductionUsecaseCaseErrorOnUpdateDeduction) UpdateDeduction(req UpdateKReceiptDeductionReq) (UpdateKReceiptDeductionRes, error) {
+	return UpdateKReceiptDeductionRes{}, errors.New("error on update")
 }
 
 func TestUpdateDeductionHandler_ShouldGetInternalServerError_WhenErrorOnUpdateDeduction(t *testing.T) {
 	// Arrange
-	usecase := &mockPersonalDeductionUsecaseCaseErrorOnUpdateDeduction{}
-	handler := NewPersonalDeductionHttpHandler(
+	usecase := &mockKReceiptDeductionUsecaseCaseErrorOnUpdateDeduction{}
+	handler := NewKReceiptDeductionHttpHandler(
 		usecase,
 	)
 
 	reqBody := `{
-		"amount": 60000.0
+		"amount": 50000.0
 	}`
 
 	_, c, _ := mockUpdateDeductionHttpReq(reqBody)
@@ -135,8 +121,8 @@ func TestUpdateDeductionHandler_ShouldGetInternalServerError_WhenErrorOnUpdateDe
 
 func TestUpdateDeductionHandler_ShouldGetSuccess_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	usecase := &mockPersonalDeductionUsecaseCaseSuccess{}
-	handler := NewPersonalDeductionHttpHandler(
+	usecase := &mockKReceiptDeductionUsecaseCaseSuccess{}
+	handler := NewKReceiptDeductionHttpHandler(
 		usecase,
 	)
 
@@ -148,10 +134,10 @@ func TestUpdateDeductionHandler_ShouldGetSuccess_WhenCorrectInput(t *testing.T) 
 		{
 			"Test case 1",
 			`{
-				"amount": 60000.0
+				"amount": 50000.0
 			}`,
 			`{
-				"personalDeduction": 60000
+				"kReceipt": 50000
 			}`,
 		},
 		{
@@ -160,7 +146,7 @@ func TestUpdateDeductionHandler_ShouldGetSuccess_WhenCorrectInput(t *testing.T) 
 				"amount": 70000.0
 			}`,
 			`{
-				"personalDeduction": 60000
+				"kReceipt": 50000
 			}`,
 		},
 		{
@@ -169,7 +155,7 @@ func TestUpdateDeductionHandler_ShouldGetSuccess_WhenCorrectInput(t *testing.T) 
 				"amount": 10000.0
 			}`,
 			`{
-				"personalDeduction": 60000
+				"kReceipt": 50000
 			}`,
 		},
 		{
@@ -178,7 +164,16 @@ func TestUpdateDeductionHandler_ShouldGetSuccess_WhenCorrectInput(t *testing.T) 
 				"amount": 100000.0
 			}`,
 			`{
-				"personalDeduction": 60000
+				"kReceipt": 50000
+			}`,
+		},
+		{
+			"Test case 5",
+			`{
+				"amount": 0.0
+			}`,
+			`{
+				"kReceipt": 50000
 			}`,
 		},
 	}
@@ -195,22 +190,4 @@ func TestUpdateDeductionHandler_ShouldGetSuccess_WhenCorrectInput(t *testing.T) 
 			assert.JSONEq(t, tc.expectedResponse, rec.Body.String())
 		})
 	}
-
-	reqBody := `{
-		"amount": 60000.0
-	}`
-
-	_, c, rec := mockUpdateDeductionHttpReq(reqBody)
-
-	expectedResponse := `{
-		"personalDeduction": 60000
-	}`
-
-	// Act
-	err := handler.UpdateDeduction(c)
-
-	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusOK, rec.Result().StatusCode)
-	assert.JSONEq(t, expectedResponse, rec.Body.String())
 }
