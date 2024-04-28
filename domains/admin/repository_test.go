@@ -22,7 +22,7 @@ func TestFindUserByUsername_ShouldReturnNil_WhenUsernameInvalid(t *testing.T) {
 }
 
 // FindUserByUsername
-func TestFindUserByUsername_ShouldReturnNil_WhenUsernameValid(t *testing.T) {
+func TestFindUserByUsername_ShouldReturnUser_WhenUsernameValid(t *testing.T) {
 	// Arrange
 	repository := NewAdminRepository(&mockConfig)
 
