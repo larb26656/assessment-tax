@@ -12,7 +12,7 @@ type TaxCalculatorReq struct {
 }
 
 type TaxLevelRes struct {
-	Level string  `json:"leveL"`
+	Level string  `json:"level"`
 	Tax   float64 `json:"tax"`
 }
 type TaxCalculatorRes struct {
