@@ -34,7 +34,7 @@ func main() {
 	e := server.InitServer(appConfig, db)
 
 	go func() {
-		if err := e.Start(":2565"); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(fmt.Sprintf(":%s", appConfig.Port)); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()
