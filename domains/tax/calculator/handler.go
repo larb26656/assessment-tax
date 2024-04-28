@@ -1,6 +1,7 @@
 package calculator
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -21,20 +22,25 @@ func NewTaxCalculatorHttpHandler(taxCalculatorUseCase TaxCalculatorUseCase) TaxC
 }
 
 func (t taxCalculatorHttpHandler) CalculateTax(c echo.Context) error {
-	// TODO validate req payload
 	var req TaxCalculatorReq
 
 	err := c.Bind(&req)
 
 	if err != nil {
-		return c.String(http.StatusBadRequest, "Bad request")
+		fmt.Println(err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 
 	if err = c.Validate(req); err != nil {
 		return err
 	}
 
-	res := t.taxCalculatorUseCase.Calculate(req)
+	res, err := t.taxCalculatorUseCase.Calculate(req)
+
+	if err != nil {
+		fmt.Println(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong")
+	}
 
 	return c.JSON(http.StatusOK, res)
 }

@@ -1,4 +1,4 @@
-package structValidator
+package validator
 
 import (
 	"net/http"
@@ -7,8 +7,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type StructValidator struct {
-	validator *validator.Validate
+func NewStructValidator(validator *validator.Validate) *StructValidator {
+	return &StructValidator{
+		validator: validator,
+	}
 }
 
 func (cv *StructValidator) Validate(i interface{}) error {
@@ -16,10 +18,4 @@ func (cv *StructValidator) Validate(i interface{}) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return nil
-}
-
-func NewStructValidator(validator *validator.Validate) *StructValidator {
-	return &StructValidator{
-		validator: validator,
-	}
 }

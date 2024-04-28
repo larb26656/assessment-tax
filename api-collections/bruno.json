@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "api-collections",
+  "name": "Assessment tax",
   "type": "collection",
   "ignore": [
     "node_modules",

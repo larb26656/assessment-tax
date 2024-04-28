@@ -1,0 +1,22 @@
+meta {
+  name: Update personal deduction
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/admin/deductions/personal
+  body: json
+  auth: basic
+}
+
+auth:basic {
+  username: {{admin_username}}
+  password: {{admin_password}}
+}
+
+body:json {
+  {
+    "amount": 60000.0
+  }
+}

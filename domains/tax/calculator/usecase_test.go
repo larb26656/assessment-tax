@@ -1,15 +1,30 @@
 package calculator
 
 import (
+	"errors"
 	"testing"
 
+	"github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
 	"github.com/stretchr/testify/assert"
 )
+
+type mockPersonalDeductionUsecase struct {
+}
+
+func (p *mockPersonalDeductionUsecase) GetDeduction() (float64, error) {
+	return 60000.0, nil
+}
+
+func (p *mockPersonalDeductionUsecase) UpdateDeduction(req personal.UpdatePersonalDeductionReq) (personal.UpdatePersonalDeductionRes, error) {
+	return personal.UpdatePersonalDeductionRes{}, nil
+}
 
 // CalculateAllowances
 func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecase{},
+	)
 	testCases := []struct {
 		name                    string
 		allowances              []AllowanceReq
@@ -65,7 +80,9 @@ func TestCalculateAllowances_ShouldCalculateCorrect_WhenCorrectInput(t *testing.
 // CalculateTaxDeduction
 func TestCalculateTaxDeduction_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecase{},
+	)
 	testCases := []struct {
 		name                 string
 		selfTaxDeduction     float64
@@ -90,7 +107,9 @@ func TestCalculateTaxDeduction_ShouldCalculateCorrect_WhenCorrectInput(t *testin
 // CalculateNetIncome
 func TestCalculateNetIncome_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecase{},
+	)
 	testCases := []struct {
 		name              string
 		income            float64
@@ -115,17 +134,21 @@ func TestCalculateNetIncome_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T
 // TestCalculateTax
 func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecase{},
+	)
 	testCases := []struct {
-		name             string
-		netIncome        float64
-		wht              float64
-		expectedTax      float64
-		expectedTaxLevel []TaxLevelRes
+		name              string
+		netIncome         float64
+		wht               float64
+		expectedTax       float64
+		expectedTaxRefund float64
+		expectedTaxLevel  []TaxLevelRes
 	}{
 		{
 			"Test case 1",
 			100000,
+			0,
 			0,
 			0,
 			[]TaxLevelRes{
@@ -155,6 +178,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			200000,
 			0,
 			5000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -182,6 +206,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			440000,
 			0,
 			29000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -209,6 +234,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			440000,
 			25000,
 			4000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -216,7 +242,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   4000,
+					Tax:   29000,
 				},
 				{
 					Level: "500,001-1,000,000",
@@ -236,6 +262,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			440000,
 			29000,
 			0,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -243,7 +270,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   0,
+					Tax:   29000,
 				},
 				{
 					Level: "500,001-1,000,000",
@@ -263,7 +290,8 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			"Test case 6",
 			440000,
 			39000,
-			-10000,
+			0,
+			10000,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -271,7 +299,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   -10000,
+					Tax:   29000,
 				},
 				{
 					Level: "500,001-1,000,000",
@@ -291,6 +319,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			600000,
 			0,
 			50000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -318,6 +347,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			750000,
 			0,
 			72500,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -345,6 +375,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			1500000,
 			0,
 			200000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -372,6 +403,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			3000000,
 			0,
 			650000,
+			0,
 			[]TaxLevelRes{
 				{
 					Level: "0-150,000",
@@ -400,24 +432,63 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Act
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			tax, taxLevel := calculator.CalculateTax(tc.netIncome, tc.wht)
+			tax, taxRefund, taxLevel := calculator.CalculateTax(tc.netIncome, tc.wht)
 
 			// Assert
 			assert.Equal(t, tc.expectedTax, tax)
+			assert.Equal(t, tc.expectedTaxRefund, taxRefund)
 			assert.Equal(t, tc.expectedTaxLevel, taxLevel)
 		})
 	}
 }
 
 // TestCalculate
+
+type mockPersonalDeductionUsecaseGetDeductionNotFound struct {
+}
+
+func (p *mockPersonalDeductionUsecaseGetDeductionNotFound) GetDeduction() (float64, error) {
+	return 0.0, errors.New("Not found")
+}
+
+func (p *mockPersonalDeductionUsecaseGetDeductionNotFound) UpdateDeduction(req personal.UpdatePersonalDeductionReq) (personal.UpdatePersonalDeductionRes, error) {
+	return personal.UpdatePersonalDeductionRes{}, nil
+}
+
+func TestCalculate_ShouldReturnErr_WhenGetDeductionNotFound(t *testing.T) {
+	// Arrange
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecaseGetDeductionNotFound{},
+	)
+
+	req := TaxCalculatorReq{
+		TotalIncome: 500000.0,
+		WHT:         0.0,
+		Allowances: []AllowanceReq{
+			{AllowanceType: "donation", Amount: 0.0},
+		},
+	}
+
+	// Act
+	result, err := calculator.Calculate(req)
+
+	// Assert
+	assert.Equal(t, 0.0, result.Tax)
+	assert.Equal(t, 0.0, result.TaxRefund)
+	assert.NotNil(t, err)
+
+}
 func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 	// Arrange
-	calculator := NewTaxCalculatorUseCase()
+	calculator := NewTaxCalculatorUseCase(
+		&mockPersonalDeductionUsecase{},
+	)
 
 	testCases := []struct {
-		name        string
-		req         TaxCalculatorReq
-		expectedTax float64
+		name              string
+		req               TaxCalculatorReq
+		expectedTax       float64
+		expectedTaxRefund float64
 	}{
 		{"Test case 1", TaxCalculatorReq{
 			TotalIncome: 500000.0,
@@ -425,30 +496,50 @@ func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 			Allowances: []AllowanceReq{
 				{AllowanceType: "donation", Amount: 0.0},
 			},
-		}, 29000},
+		},
+			29000,
+			0,
+		},
 		{"Test case 2", TaxCalculatorReq{
 			TotalIncome: 500000.0,
 			WHT:         25000.0,
 			Allowances: []AllowanceReq{
 				{AllowanceType: "donation", Amount: 0.0},
 			},
-		}, 4000},
+		},
+			4000,
+			0,
+		},
 		{"Test case 3", TaxCalculatorReq{
 			TotalIncome: 500000.0,
 			WHT:         0.0,
 			Allowances: []AllowanceReq{
 				{AllowanceType: "donation", Amount: 200000.0},
 			},
-		}, 19000.0},
+		},
+			19000.0,
+			0,
+		},
+		{"Test case 4", TaxCalculatorReq{
+			TotalIncome: 500000.0,
+			WHT:         29000.0,
+			Allowances: []AllowanceReq{
+				{AllowanceType: "donation", Amount: 200000.0},
+			},
+		},
+			0,
+			10000.0,
+		},
 	}
 
 	// Act
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := calculator.Calculate(tc.req)
+			result, _ := calculator.Calculate(tc.req)
 
 			// Assert
 			assert.Equal(t, tc.expectedTax, result.Tax)
+			assert.Equal(t, tc.expectedTaxRefund, result.TaxRefund)
 		})
 	}
 }
