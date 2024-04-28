@@ -1,0 +1,22 @@
+meta {
+  name: Update kReceipt deduction story 5
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/admin/deductions/k-receipt
+  body: json
+  auth: basic
+}
+
+auth:basic {
+  username: {{admin_username}}
+  password: {{admin_password}}
+}
+
+body:json {
+  {
+    "amount": 50000.0
+  }
+}

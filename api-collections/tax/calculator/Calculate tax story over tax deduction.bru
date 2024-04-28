@@ -1,0 +1,28 @@
+meta {
+  name: Calculate tax story over tax deduction
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{host}}/tax/calculations
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "totalIncome": 20000.0,
+    "wht": 0.0,
+    "allowances": [
+      {
+        "allowanceType": "donation",
+        "amount": 100000.0
+      },
+      {
+        "allowanceType": "k-receipt",
+        "amount": 50000.0
+      }
+    ]
+  }
+}

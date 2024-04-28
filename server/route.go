@@ -8,22 +8,23 @@ import (
 	"github.com/larb26656/assessment-tax/config"
 	"github.com/larb26656/assessment-tax/domains/admin"
 	"github.com/larb26656/assessment-tax/domains/admin/deduction"
+	"github.com/larb26656/assessment-tax/domains/admin/deduction/kReceipt"
 	"github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
 	"github.com/larb26656/assessment-tax/domains/tax/calculator"
 )
 
 func RegisterRoute(appConfig *config.AppConfig, db *sql.DB, e *echo.Echo) {
 
-	// deductions
+	// deduction
 	deductionRepository := deduction.NewDeductionsRepository(db)
+
+	// personal deduction
 	personalDeductionsUsecase := personal.NewPersonalDeductionUsecase(deductionRepository)
 	personalDeductionsHttpHandler := personal.NewPersonalDeductionHttpHandler(personalDeductionsUsecase)
-	// tax
-	taxCalculatorUsecase := calculator.NewTaxCalculatorUseCase(personalDeductionsUsecase)
-	taxCalculatorHttpHandler := calculator.NewTaxCalculatorHttpHandler(taxCalculatorUsecase)
 
-	e.POST("/tax/calculations", taxCalculatorHttpHandler.CalculateTax)
-	e.POST("/tax/calculations/upload-csv", taxCalculatorHttpHandler.CalculateTaxWithCSV)
+	// k-Receipt deduction
+	kReceiptDeductionsUsecase := kReceipt.NewKReceiptDeductionUsecase(deductionRepository)
+	kReceiptDeductionsHttpHandler := kReceipt.NewKReceiptDeductionHttpHandler(kReceiptDeductionsUsecase)
 
 	// admin
 	adminRepository := admin.NewAdminRepository(appConfig)
@@ -40,4 +41,12 @@ func RegisterRoute(appConfig *config.AppConfig, db *sql.DB, e *echo.Echo) {
 	}))
 
 	adminGroup.POST("/deductions/personal", personalDeductionsHttpHandler.UpdateDeduction)
+	adminGroup.POST("/deductions/k-receipt", kReceiptDeductionsHttpHandler.UpdateDeduction)
+
+	// tax
+	taxCalculatorUsecase := calculator.NewTaxCalculatorUseCase(personalDeductionsUsecase, kReceiptDeductionsUsecase)
+	taxCalculatorHttpHandler := calculator.NewTaxCalculatorHttpHandler(taxCalculatorUsecase)
+
+	e.POST("/tax/calculations", taxCalculatorHttpHandler.CalculateTax)
+	e.POST("/tax/calculations/upload-csv", taxCalculatorHttpHandler.CalculateTaxWithCSV)
 }
