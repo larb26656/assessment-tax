@@ -25,10 +25,10 @@ func TestAuthenticate_ShouldReturnFalse_WhenUserNotFound(t *testing.T) {
 	assert.False(t, result)
 }
 
-type mockAdminRepositoryCasestruct struct {
+type mockAdminRepository struct {
 }
 
-func (*mockAdminRepositoryCasestruct) FindUserByUsername(username string) *User {
+func (*mockAdminRepository) FindUserByUsername(username string) *User {
 	return &User{
 		Username: "adminTax",
 		Password: "admin!",
@@ -37,7 +37,7 @@ func (*mockAdminRepositoryCasestruct) FindUserByUsername(username string) *User 
 
 func TestAuthenticate_ShouldReturnFalse_WhenPasswordInvalid(t *testing.T) {
 	// Arrange
-	usecase := NewAdminUsecase(&mockAdminRepositoryCasestruct{})
+	usecase := NewAdminUsecase(&mockAdminRepository{})
 
 	// Act
 	result := usecase.Authenticate("adminTax", "Pass")
@@ -48,7 +48,7 @@ func TestAuthenticate_ShouldReturnFalse_WhenPasswordInvalid(t *testing.T) {
 
 func TestAuthenticate_ShouldReturnTrue_WhenInputCorrect(t *testing.T) {
 	// Arrange
-	usecase := NewAdminUsecase(&mockAdminRepositoryCasestruct{})
+	usecase := NewAdminUsecase(&mockAdminRepository{})
 
 	// Act
 	result := usecase.Authenticate("adminTax", "admin!")

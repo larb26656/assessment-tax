@@ -6,7 +6,7 @@ import (
 
 type DeductionRepository interface {
 	GetDeduction(key string) (float64, error)
-	UpdateDeduction(key string, deductions float64) error
+	UpdateDeduction(key string, deduction float64) error
 }
 
 type deductionRepository struct {
@@ -38,14 +38,14 @@ func (p *deductionRepository) GetDeduction(key string) (float64, error) {
 	return deductions, nil
 }
 
-func (p *deductionRepository) UpdateDeduction(key string, deductions float64) error {
+func (p *deductionRepository) UpdateDeduction(key string, deduction float64) error {
 	stmt, err := p.db.Prepare(`UPDATE tax_deduction_setting SET value=$2 WHERE "key" = $1`)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(key, deductions)
+	_, err = stmt.Exec(key, deduction)
 
 	if err != nil {
 		return err
