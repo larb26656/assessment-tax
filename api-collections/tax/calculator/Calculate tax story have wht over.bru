@@ -1,0 +1,20 @@
+meta {
+  name: Calculate tax story have wht over
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{host}}/tax/calculations
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "totalIncome": 500000.0,
+    "wht": 39000.0,
+    "allowances": [
+    ]
+  }
+}

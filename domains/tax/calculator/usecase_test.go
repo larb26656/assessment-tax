@@ -242,7 +242,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   4000,
+					Tax:   29000,
 				},
 				{
 					Level: "500,001-1,000,000",
@@ -270,7 +270,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   0,
+					Tax:   29000,
 				},
 				{
 					Level: "500,001-1,000,000",
@@ -299,7 +299,7 @@ func TestCalculateTax_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
 				},
 				{
 					Level: "150,001-500,000",
-					Tax:   0,
+					Tax:   29000,
 				},
 				{
 					Level: "500,001-1,000,000",
