@@ -1,9 +1,12 @@
 package calculator
 
-import "github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
+import (
+	"github.com/larb26656/assessment-tax/constant/allowanceType"
+	"github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
+)
 
 type TaxCalculatorUseCase interface {
-	CalculateAllowances(allowances []AllowanceReq, maxDonation float64) float64
+	CalculateAllowances(allowances []AllowanceReq, maxDonation float64, maxKReceipt float64) float64
 	CalculateTaxDeduction(personalDeduction, totalAllowances float64) float64
 	CalculateNetIncome(income, taxDeduction float64) float64
 	CalculateTax(netIncome float64, wht float64) (float64, float64, []TaxLevelRes)
@@ -21,13 +24,16 @@ func NewTaxCalculatorUseCase(personalDeductionUsecase personal.PersonalDeduction
 	}
 }
 
-func (t *taxCalculatorUseCase) CalculateAllowances(allowances []AllowanceReq, maxDonation float64) float64 {
+func (t *taxCalculatorUseCase) CalculateAllowances(allowances []AllowanceReq, maxDonation float64, maxKReceipt float64) float64 {
 	var totalAllowances float64 = 0
 	var totalDonation float64 = 0
+	var totalKReceipt float64 = 0
 
 	for _, allowance := range allowances {
-		if allowance.AllowanceType == "donation" {
+		if allowance.AllowanceType == allowanceType.Donation {
 			totalDonation += allowance.Amount
+		} else if allowance.AllowanceType == allowanceType.KReceipt {
+			totalKReceipt += allowance.Amount
 		}
 	}
 
@@ -35,7 +41,11 @@ func (t *taxCalculatorUseCase) CalculateAllowances(allowances []AllowanceReq, ma
 		totalDonation = maxDonation
 	}
 
-	totalAllowances = totalDonation
+	if totalKReceipt > maxKReceipt {
+		totalKReceipt = maxKReceipt
+	}
+
+	totalAllowances = totalDonation + totalKReceipt
 
 	return totalAllowances
 }
@@ -135,7 +145,7 @@ func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, fl
 }
 
 func (t *taxCalculatorUseCase) Calculate(req TaxCalculatorReq) (TaxCalculatorRes, error) {
-	totalAllowances := t.CalculateAllowances(req.Allowances, 100000)
+	totalAllowances := t.CalculateAllowances(req.Allowances, 100000, 50000)
 	selfTaxDeduction, err := t.personalDeductionUsecase.GetDeduction()
 
 	if err != nil {

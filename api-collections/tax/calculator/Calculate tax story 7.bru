@@ -1,0 +1,28 @@
+meta {
+  name: Calculate tax story 7
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{host}}/tax/calculations
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "totalIncome": 500000.0,
+    "wht": 0.0,
+    "allowances": [
+      {
+        "allowanceType": "k-receipt",
+        "amount": 200000.0
+      },
+      {
+        "allowanceType": "donation",
+        "amount": 100000.0
+      }
+    ]
+  }
+}
