@@ -1,6 +1,6 @@
 package calculator
 
-import "github.com/larb26656/assessment-tax/domains/admin/deductions/personal"
+import "github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
 
 type TaxCalculatorUseCase interface {
 	CalculateAllowances(allowances []AllowanceReq, maxDonation float64) float64
@@ -11,12 +11,12 @@ type TaxCalculatorUseCase interface {
 }
 
 type taxCalculatorUseCase struct {
-	personalDeductionsRepository personal.PersonalDeductionsRepository
+	personalDeductionUsecase personal.PersonalDeductionUsecase
 }
 
-func NewTaxCalculatorUseCase(personalDeductionsRepository personal.PersonalDeductionsRepository) TaxCalculatorUseCase {
+func NewTaxCalculatorUseCase(personalDeductionUsecase personal.PersonalDeductionUsecase) TaxCalculatorUseCase {
 	return &taxCalculatorUseCase{
-		personalDeductionsRepository: personalDeductionsRepository,
+		personalDeductionUsecase: personalDeductionUsecase,
 	}
 }
 
@@ -135,7 +135,7 @@ func (t *taxCalculatorUseCase) CalculateTax(netIncome, wht float64) (float64, fl
 
 func (t *taxCalculatorUseCase) Calculate(req TaxCalculatorReq) (TaxCalculatorRes, error) {
 	totalAllowances := t.CalculateAllowances(req.Allowances, 100000)
-	selfTaxDeduction, err := t.personalDeductionsRepository.GetDeductions()
+	selfTaxDeduction, err := t.personalDeductionUsecase.GetDeduction()
 
 	if err != nil {
 		return TaxCalculatorRes{}, err

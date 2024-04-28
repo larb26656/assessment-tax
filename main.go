@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/larb26656/assessment-tax/config"
+	"github.com/larb26656/assessment-tax/database"
 	"github.com/larb26656/assessment-tax/server"
 )
 
@@ -12,9 +13,16 @@ func main() {
 	appConfig, err := config.NewAppConfigFromEnv()
 
 	if err != nil {
-		panic(fmt.Sprintf("Failed to load config %s", err))
+		panic(fmt.Sprintf("Failed to load config : %s", err))
+	}
+
+	// init database
+	db, err := database.InitDatabase(appConfig)
+
+	if err != nil {
+		panic(fmt.Sprintf("Failed to initialize database : %s", err))
 	}
 
 	// start server
-	server.InitServer(appConfig)
+	server.InitServer(appConfig, db)
 }

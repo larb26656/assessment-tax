@@ -1,9 +1,9 @@
 package personal
 
-type UpdatePersonalDeductionsReq struct {
+type UpdatePersonalDeductionReq struct {
 	Amount float64 `json:"amount" validate:"gte=0,lte=100000"`
 }
 
-type UpdatePersonalDeductionsRes struct {
+type UpdatePersonalDeductionRes struct {
 	PersonalDeduction float64 `json:"personalDeduction"`
 }

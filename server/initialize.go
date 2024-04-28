@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
@@ -9,12 +10,12 @@ import (
 	myValidator "github.com/larb26656/assessment-tax/validator"
 )
 
-func InitServer(appConfig *config.AppConfig) *echo.Echo {
+func InitServer(appConfig *config.AppConfig, db *sql.DB) *echo.Echo {
 	e := echo.New()
 
 	e.Validator = myValidator.NewStructValidator(validator.New())
 
-	RegisterRoute(appConfig, e)
+	RegisterRoute(appConfig, db, e)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", appConfig.Port)))
 

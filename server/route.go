@@ -1,22 +1,25 @@
 package server
 
 import (
+	"database/sql"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/larb26656/assessment-tax/config"
 	"github.com/larb26656/assessment-tax/domains/admin"
-	"github.com/larb26656/assessment-tax/domains/admin/deductions/personal"
+	"github.com/larb26656/assessment-tax/domains/admin/deduction"
+	"github.com/larb26656/assessment-tax/domains/admin/deduction/personal"
 	"github.com/larb26656/assessment-tax/domains/tax/calculator"
 )
 
-func RegisterRoute(appConfig *config.AppConfig, e *echo.Echo) {
+func RegisterRoute(appConfig *config.AppConfig, db *sql.DB, e *echo.Echo) {
 
-	// personal deductions
-	personalDeductionsRepository := personal.NewPersonalDeductionsRepository()
-	personalDeductionsUsecase := personal.NewPersonalDeductionsUsecase(personalDeductionsRepository)
-	personalDeductionsHttpHandler := personal.NewPersonalDeductionsHttpHandler(personalDeductionsUsecase)
+	// deductions
+	deductionRepository := deduction.NewDeductionsRepository(db)
+	personalDeductionsUsecase := personal.NewPersonalDeductionUsecase(deductionRepository)
+	personalDeductionsHttpHandler := personal.NewPersonalDeductionHttpHandler(personalDeductionsUsecase)
 	// tax
-	taxCalculatorUsecase := calculator.NewTaxCalculatorUseCase(personalDeductionsRepository)
+	taxCalculatorUsecase := calculator.NewTaxCalculatorUseCase(personalDeductionsUsecase)
 	taxCalculatorHttpHandler := calculator.NewTaxCalculatorHttpHandler(taxCalculatorUsecase)
 
 	e.POST("/tax/calculations", taxCalculatorHttpHandler.CalculateTax)
@@ -35,5 +38,5 @@ func RegisterRoute(appConfig *config.AppConfig, e *echo.Echo) {
 		return true, nil
 	}))
 
-	adminGroup.POST("/deductions/personal", personalDeductionsHttpHandler.UpdateDeductions)
+	adminGroup.POST("/deductions/personal", personalDeductionsHttpHandler.UpdateDeduction)
 }
