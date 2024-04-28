@@ -525,7 +525,7 @@ func TestCalculate_ShouldReturnErr_WhenGetPersonalDeductionNotFound(t *testing.T
 	// Assert
 	assert.Equal(t, 0.0, result.Tax)
 	assert.Equal(t, 0.0, result.TaxRefund)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 type mockKReceiptDeductionUsecaseGetDeductionNotFound struct {
@@ -560,7 +560,7 @@ func TestCalculate_ShouldReturnErr_WhenGetKReceiptDeductionNotFound(t *testing.T
 	// Assert
 	assert.Equal(t, 0.0, result.Tax)
 	assert.Equal(t, 0.0, result.TaxRefund)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestCalculate_ShouldCalculateCorrect_WhenCorrectInput(t *testing.T) {
@@ -775,7 +775,7 @@ func TestCalculateTaxWithCSV_ShouldReturnErr_WhenGetDeductionNotFound(t *testing
 	_, err := calculator.CalculateMultiRequest(reqs)
 
 	// Assert
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 
 }
 

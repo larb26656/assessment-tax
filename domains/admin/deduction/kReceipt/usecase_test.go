@@ -30,7 +30,7 @@ func TestGetDeduction_ShouldReturnErr_WhenDeductionNotFound(t *testing.T) {
 	_, err := usecase.GetDeduction()
 
 	// Assert
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, allowanceType.KReceipt, repo.key)
 }
 
@@ -56,7 +56,7 @@ func TestGetDeduction_ShouldReturnDeduction_WhenDeductionFound(t *testing.T) {
 	deduction, err := usecase.GetDeduction()
 
 	// Assert
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, allowanceType.KReceipt, repo.key)
 	assert.Equal(t, 50000.0, deduction)
 }
@@ -89,7 +89,7 @@ func TestUpdateDeduction_ShouldReturnError_WhenUpdateDeductionFail(t *testing.T)
 	_, err := usecase.UpdateDeduction(req)
 
 	// Assert
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, allowanceType.KReceipt, repo.key)
 	assert.Equal(t, req.Amount, repo.amount)
 }
@@ -121,7 +121,7 @@ func TestUpdateDeduction_ShouldSuccess_WhenCorrectInput(t *testing.T) {
 	result, err := usecase.UpdateDeduction(req)
 
 	// Assert
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, allowanceType.KReceipt, repo.key)
 	assert.Equal(t, req.Amount, repo.amount)
 	assert.Equal(t, req.Amount, result.KReceipt)

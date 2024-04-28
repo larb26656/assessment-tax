@@ -1,7 +1,7 @@
 package kReceipt
 
 type UpdateKReceiptDeductionReq struct {
-	Amount float64 `json:"amount" validate:"gte=0,lte=100000"`
+	Amount float64 `json:"amount" validate:"required,gte=0,lte=100000"`
 }
 
 type UpdateKReceiptDeductionRes struct {
